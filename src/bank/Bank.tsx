@@ -119,7 +119,6 @@ const Bank = () => {
 
   async function handleEditLineItem(updatedItem) {
     try {
-      console.log("Updated Item:", updatedItem); // Debug log
       const url = `http://localhost:3003/api/invoicelineitems/${updatedItem._id}`;
       console.log("Sending PUT request to:", url, updatedItem);
 
@@ -171,6 +170,66 @@ const Bank = () => {
       setIsModalOpen(false);
     }
   };
+
+
+
+  // add Users Items and end 
+  async function HandleAddser(updatedItem) {
+    try {
+      const url = `http://localhost:3003/api/invoicelineitems/${updatedItem._id}`;
+      console.log("Sending PUT request to:", url, updatedItem);
+
+      // Ensure headers are correct if needed
+      const response = await axios.put(url, updatedItem, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      console.log("Response from backend:", response);
+
+      const updatedLineItems = lineItems.map((item) =>
+        item._id === response.data._id ? response.data : item
+      );
+      setLineItems(updatedLineItems);
+      setIsEditingLineItem(false);
+    } catch (error) {
+      if (error.response) {
+        console.error("Error response:", error.response); // More detailed error
+      } else if (error.request) {
+        console.error("Error request:", error.request);
+      } else {
+        console.error("Error message:", error.message);
+      }
+    }
+  }
+
+ 
+  const handleSavedData = async () => {
+    console.log(editItem);
+    if (editItem) {
+      // Construct the updated item with the new values
+      const updatedItem = {
+        invoiceNumber: editItem.invoiceNumber._id,
+        serviceId: editItem.serviceId._id,
+        hoursDays: hours,
+        amount: amount,
+        _id: editItem._id,
+      };
+
+      await updateService(editItem.serviceId._id, {
+        name: description,
+        fee: fees,
+      });
+
+      // Call the function to handle the update
+      HandleAddser(updatedItem);
+
+      // Close the modal after saving the changes
+      setIsModalOpen(false);
+    }
+  };
+
+  // end Add User//
 
   return (
     <>
@@ -333,6 +392,12 @@ const Bank = () => {
                         >
                           Delete
                         </button>
+                        <button
+        className="bg-blue-700 text-white px-2 py-1 rounded-md"
+        onClick={() => setIsModalOpen(true)}
+      >
+        Add Users
+      </button>
                       </td>
                     </tr>
                   ))}
@@ -397,7 +462,68 @@ const Bank = () => {
             )}
           </div>
 
+
+          {/* add user modal */}
+          {isModalOpen && (
+              <div className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50 z-50">
+                <div className="bg-white p-6 rounded-md shadow-lg max-w-lg mx-auto">
+                  <div className="space-y-4 mb-6">
+                    <h2 className="text-black-500 font-semibold">
+                      Description
+                    </h2>
+                    <input
+                      type="text"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Enter Your Description"
+                      className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <input
+                      type="number"
+                      value={fees}
+                      onChange={(e) => setFees(e.target.value)}
+                      placeholder="Enter Your Fees"
+                      className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <input
+                      type="number"
+                      value={hours}
+                      onChange={(e) => setHours(e.target.value)}
+                      placeholder="Enter Your Hrs./Days"
+                      className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <input
+                      type="text"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      placeholder="Enter Your Amount"
+                      className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div className="flex justify-end space-x-4">
+                    <button
+                      onClick={handleSavedData}
+                      className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      Add
+                    </button>
+                    <button
+                      onClick={() => setIsModalOpen(false)} // Close the modal without saving
+                      className="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* end Add userModal */}
+
           {/* Totals Section */}
+          <div>
           {selectedInvoice && (
             <div className="container-total flex items-center justify-between mt-4">
               <div className="left-side">
