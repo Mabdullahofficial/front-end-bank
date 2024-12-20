@@ -472,7 +472,7 @@ const Client = () => {
         {/* Totals Section */}
         <div>
           {selectedInvoice && (
-            <div className="container-total flex items-center justify-between mt-4">
+            <div className="flex items-center justify-between ml-9 mr-10">
               <div className="left-side">
                 <h1 className="text-blue-500">INVOICE TOTAL</h1>
                 <h2>RS {selectedInvoice.total}</h2>
@@ -486,7 +486,7 @@ const Client = () => {
 
           {/* Payment Details */}
           {paymentDetails && (
-            <div className="left-payment mt-8">
+            <div className="left-payment ml-9 mt-5">
               <h1 className="font-bold text-lg mb-2 text-blue-500">Payment Details</h1>
               <h2 className="text-gray-700 font-semibold">
                 AC Holder: {paymentDetails.account_holder}
