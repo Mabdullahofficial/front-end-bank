@@ -20,6 +20,7 @@ const Office = () => {
   const [hoursDays, setHoursDays] = useState("");
   const [amount, setAmount] = useState("");
   const [editItem, setEditItem] = useState(null);
+  const [isPrintOn, setIsPrintOn] = useState(false);
 
   // Reset form fields function
   const resetFormFields = () => {
@@ -41,6 +42,13 @@ const Office = () => {
       console.error("Error fetching invoices:", error);
     }
   }
+
+  function triggerPrint() {
+    window.print();
+
+    setIsPrintOn(false)
+  }
+  
 
   // Fetch line items
   async function fetchLineItems() {
@@ -184,13 +192,44 @@ const Office = () => {
     resetFormFields();
   };
 
+
+
+  const handlePrintDownload = async () => {
+    try {
+      // First make API call to generate PDF
+      const response = await api.get('/generate-pdf', { responseType: 'blob' });
+      
+      // Create blob URL
+      const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+      const pdfUrl = window.URL.createObjectURL(pdfBlob);
+      
+      // Trigger download
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = 'invoice.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Open in new tab
+      window.open(pdfUrl, '_blank');
+      
+      // Clean up
+      window.URL.revokeObjectURL(pdfUrl);
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+    }
+  };
+  
+  
+
   return (
     <>
-      <Header />
+      {!isPrintOn && <Header />}
       <div className="w-full h-auto flex flex-col items-center">
         <div className="w-[95%]">
           {/* Invoice Selection */}
-          <div className="flex justify-between items-center my-4">
+          {!isPrintOn && <div className="flex justify-between items-center my-4">
             <h1 className="text-2xl font-bold">Invoices</h1>
             <select
               value={selectedInvoice?._id || ""}
@@ -205,7 +244,7 @@ const Office = () => {
                 </option>
               ))}
             </select>
-          </div>
+          </div>}
 
           {/* Invoice Details Section */}
           <div className="flex flex-col sm:flex-row flex-1 justify-center items-start gap-8 p-4">
@@ -283,7 +322,7 @@ const Office = () => {
                     <th className="border border-gray-300 px-4 py-2 text-left text-slate-400">Fee</th>
                     <th className="border border-gray-300 px-4 py-2 text-left text-slate-400">HRS./DAYS</th>
                     <th className="border border-gray-300 px-4 py-2 text-left text-slate-400">Amount</th>
-                    <th className="border border-gray-300 px-4 py-2 text-left text-slate-400">Actions</th>
+                    {!isPrintOn &&<th className="border border-gray-300 px-4 py-2 text-left text-slate-400">Actions</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -293,7 +332,7 @@ const Office = () => {
                       <td className="border border-gray-300 px-4 py-2">RS {item.serviceId?.fee}</td>
                       <td className="border border-gray-300 px-4 py-2">{item?.hoursDays}</td>
                       <td className="border border-gray-300 px-4 py-2">RS {item?.amount}</td>
-                      <td className="border border-gray-300 px-4 py-2 flex gap-2">
+                      {!isPrintOn &&<td className="border border-gray-300 px-4 py-2 flex gap-2">
                         <button
                           onClick={() => openModalForEdit(item)}
                           className="bg-green-500 text-white px-2 py-1 rounded-md"
@@ -312,7 +351,7 @@ const Office = () => {
                         >
                           Add Users
                         </button>
-                      </td>
+                      </td>}
                     </tr>
                   ))}
                 </tbody>
@@ -485,6 +524,23 @@ const Office = () => {
               </p>
             </div>
           </div>
+
+
+    <div className="flex items-center justify-center mb-4">
+  <button
+    className="bg-red-500 text-white rounded-md p-2 cursor-pointer hover:bg-red-900"
+    onClick={()=> {
+      setIsPrintOn(prev => !prev);
+      setTimeout(() => triggerPrint(), 0)
+    }}
+  >
+    Print
+  </button>
+</div>
+
+
+
+
         </div>
       </div>
     </>
