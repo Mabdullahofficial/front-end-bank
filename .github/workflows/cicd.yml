@@ -27,11 +27,15 @@ jobs:
 
       # Install dependencies
       - name: Install Dependencies
-        run: npm install
+        run: npm install --unsafe-perm
+
+      # Ensure ESLint has proper permissions
+      - name: Fix ESLint Permissions
+        run: chmod +x ./node_modules/.bin/eslint
 
       # Lint the code
       - name: Lint Code
-        run: npm run lint
+        run: npx eslint . # Use npx to ensure local version is used
 
       # Build the project
       - name: Build Project
